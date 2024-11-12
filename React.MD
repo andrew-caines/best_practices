@@ -25,3 +25,105 @@ export interface GET_baseRequestOptions {
 }
 
 ```
+With those base types explained, here is the current 'template' I use, I copy this as the starting point for each new hook!
+In this example, there is a another best pratice in play, with regards to /api/backend_api that isn't covered here, just
+understand that the BASE_URL is the root of your target -> https://mybackend.com:42069/ and the PLACHOLDER_URL would be whatever other URL 
+you are using from that file.
+```typescript
+import { useEffect, useRef, useState } from "react";
+import { Result, FetchError, BaseError, GET_baseRequestOptions } from "../../types/basetypes";
+import { BASE_URL, PLACEHOLDER_URL } from "../../api/backend_api";
+
+type thisHookSuccessPayload = {
+    value: string
+}
+const clean_error: BaseError = { is_error: false, message: "" };
+export default function useTemplate() {
+    const [loading, setLoading] = useState<boolean>(false);
+    const [error, setError] = useState<BaseError>(clean_error);
+    const [data, setData] = useState<Result<thisHookSuccessPayload, BaseError>>({ success: true, value: { value: "Default" } });
+    const controllerRef = useRef<AbortController | null>(null);
+
+
+    useEffect(() => {
+        // This will abort any calls that are inflight, if the thing using this hook un-mounts.
+        return () => {
+            if (controllerRef.current) {
+                controllerRef.current.abort();
+            }
+        };
+    }, []);
+
+
+    const default_load_data = async (): Promise<void> => {
+        // Abort any existing requests before starting a new one
+        if (controllerRef.current) {
+            controllerRef.current.abort();
+        }
+        controllerRef.current = new AbortController();
+        const signal = controllerRef.current.signal;
+        let request_options: GET_baseRequestOptions = {
+            method: "GET",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            signal
+        };
+        setLoading(true);
+        setError(clean_error);
+        try {
+            const response = await fetch(`${BASE_URL}${PLACEHOLDER_URL}`, request_options);
+
+            if (controllerRef.current?.signal.aborted) {
+                //Fast return on aborted signal.
+                return;
+            }
+
+            if (response.status === 200) { //Fast return on success.
+                let result: thisHookSuccessPayload = await response.json();
+                setData({ success: true, value: result });
+                return;
+            }
+            const message = await response.text();
+            switch (response.status) {
+                case FetchError.BAD_REQUEST_ERROR:
+                    setError({ is_error: true, message, code: FetchError.BAD_REQUEST_ERROR });
+                    return;
+                case FetchError.UNAUTHORIZED_ERROR:
+                    setError({ is_error: true, message, code: FetchError.UNAUTHORIZED_ERROR });
+                    return;
+                case FetchError.INTERNAL_SERVER_ERROR:
+                    setError({ is_error: true, message, code: FetchError.INTERNAL_SERVER_ERROR });
+                    return;
+                case FetchError.NOT_FOUND_ERROR:
+                    setError({ is_error: true, message, code: FetchError.NOT_FOUND_ERROR });
+                    return;
+                case FetchError.NETWORK_ERROR:
+                default:
+                    setError({ is_error: true, message, code: FetchError.NETWORK_ERROR });
+                    return;
+            }
+        } catch (e: any) {
+            console.error(`[useTemplate] -> [default_load_data] -> Fetch Error: ${e}`);
+            if (e instanceof DOMException && e.name === 'AbortError') {
+                return; //Fast return in case of Abort mid-flight, without throwing app into Error state!
+            }
+            if (e instanceof Error) {
+                setError({ is_error: true, message: e.message, code: FetchError.NETWORK_ERROR });
+            } else {
+                setError({ is_error: true, message: e.to_string(), code: FetchError.NETWORK_ERROR });
+            }
+
+        }
+        finally {
+            setLoading(false);
+            // Only clear the controller ref if it wasn't already aborted
+            if (controllerRef.current && !controllerRef.current.signal.aborted) {
+                controllerRef.current = null;
+            }
+        }
+
+    }
+
+    return { loading, error, data, default_load_data };
+}
+```
