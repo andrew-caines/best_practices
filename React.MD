@@ -127,4 +127,7 @@ export default function useTemplate() {
 This hook covers these pitfalls I'm trying to avoid!
 
 1. UseEffect catches when a component using this hook un-mounts, it will remove and terminate the fetch, this will prevent memory leaks (possible).
+2. UseRef will make sure that this hold the current Signal, regardless of invokation. It is cleared when there is a successful fetch.
+3. This method also prevents race conditions for fetch calls, it immediately aborts when called. So single caller only.
+
 
