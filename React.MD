@@ -70,9 +70,9 @@ export default function useTemplate() {
         };
         setLoading(true);
         setError(clean_error);
+
         try {
             const response = await fetch(`${BASE_URL}${PLACEHOLDER_URL}`, request_options);
-
             if (signal.aborted) return; // Fast Return if aborted
 
             if (response.status === 200) { //Fast return on success.
@@ -81,24 +81,8 @@ export default function useTemplate() {
                 return;
             }
             const message = await response.text();
-            switch (response.status) {
-                case FetchError.BAD_REQUEST_ERROR:
-                    setError({ is_error: true, message, code: FetchError.BAD_REQUEST_ERROR });
-                    return;
-                case FetchError.UNAUTHORIZED_ERROR:
-                    setError({ is_error: true, message, code: FetchError.UNAUTHORIZED_ERROR });
-                    return;
-                case FetchError.INTERNAL_SERVER_ERROR:
-                    setError({ is_error: true, message, code: FetchError.INTERNAL_SERVER_ERROR });
-                    return;
-                case FetchError.NOT_FOUND_ERROR:
-                    setError({ is_error: true, message, code: FetchError.NOT_FOUND_ERROR });
-                    return;
-                case FetchError.NETWORK_ERROR:
-                default:
-                    setError({ is_error: true, message, code: FetchError.NETWORK_ERROR });
-                    return;
-            }
+            const errorType = response.status in FetchError ? response.status : FetchError.NETWORK_ERROR;
+            setError({ is_error: true, message, code: errorType });
         } catch (e: any) {
             console.error(`[useTemplate] -> [default_load_data] -> Fetch Error: ${e}`);
             if (e instanceof DOMException && e.name === 'AbortError') {
