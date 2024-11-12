@@ -16,4 +16,12 @@ export interface BaseError {
     message: string,
     code?: number,
 }
+
+export interface GET_baseRequestOptions {
+    method: string;
+    credentials: "include";
+    headers: RequestHeaders
+    signal: AbortSignal;
+}
+
 ```
