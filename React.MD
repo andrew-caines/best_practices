@@ -118,6 +118,7 @@ This hook covers these pitfalls I'm trying to avoid!
 # What is required to improve, or enhance.
 1. No retry mechanism currently.
 2. No Caching currently.
+3. No way to handle timeouts currently.
 
 
 
