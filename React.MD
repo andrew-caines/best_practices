@@ -115,4 +115,9 @@ This hook covers these pitfalls I'm trying to avoid!
 3. This method also prevents race conditions for fetch calls, it immediately aborts when called. So single caller only.
 4. The Error handling in the success path is, fast return values on success, and leverage Typescript ENUM -> Value to build error type based on response from server!
 
+# What is required to improve, or enhance.
+1. No retry mechanism currently.
+2. No Caching currently.
+
+
 
