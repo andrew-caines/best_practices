@@ -73,10 +73,7 @@ export default function useTemplate() {
         try {
             const response = await fetch(`${BASE_URL}${PLACEHOLDER_URL}`, request_options);
 
-            if (controllerRef.current?.signal.aborted) {
-                //Fast return on aborted signal.
-                return;
-            }
+            if (signal.aborted) return; // Fast Return if aborted
 
             if (response.status === 200) { //Fast return on success.
                 let result: thisHookSuccessPayload = await response.json();
@@ -127,3 +124,7 @@ export default function useTemplate() {
     return { loading, error, data, default_load_data };
 }
 ```
+This hook covers these pitfalls I'm trying to avoid!
+
+1. UseEffect catches when a component using this hook un-mounts, it will remove and terminate the fetch, this will prevent memory leaks (possible).
+
