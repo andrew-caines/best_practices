@@ -84,16 +84,15 @@ export default function useTemplate() {
             const errorType = response.status in FetchError ? response.status : FetchError.NETWORK_ERROR;
             setError({ is_error: true, message, code: errorType });
         } catch (e: any) {
-            console.error(`[useTemplate] -> [default_load_data] -> Fetch Error: ${e}`);
             if (e instanceof DOMException && e.name === 'AbortError') {
                 return; //Fast return in case of Abort mid-flight, without throwing app into Error state!
             }
             if (e instanceof Error) {
+                console.error(`[useTemplate] -> [default_load_data] -> Fetch Error: ${e}`);
                 setError({ is_error: true, message: e.message, code: FetchError.NETWORK_ERROR });
             } else {
                 setError({ is_error: true, message: e.to_string(), code: FetchError.NETWORK_ERROR });
             }
-
         }
         finally {
             setLoading(false);
@@ -102,7 +101,6 @@ export default function useTemplate() {
                 controllerRef.current = null;
             }
         }
-
     }
 
     return { loading, error, data, default_load_data };
