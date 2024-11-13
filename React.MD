@@ -44,7 +44,6 @@ export default function useTemplate() {
     const [data, setData] = useState<Result<thisHookSuccessPayload, BaseError>>({ success: true, value: { value: "Default" } });
     const controllerRef = useRef<AbortController | null>(null);
 
-
     useEffect(() => {
         // This will abort any calls that are inflight, if the thing using this hook un-mounts.
         return () => {
@@ -53,7 +52,6 @@ export default function useTemplate() {
             }
         };
     }, []);
-
 
     const default_load_data = async (): Promise<void> => {
         // Abort any existing requests before starting a new one
