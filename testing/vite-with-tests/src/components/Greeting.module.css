@@ -1,0 +1,24 @@
+main {
+  text-align: center; /* Center text within main */
+}
+
+.section {
+  display: flex; /* Use flexbox for layout */
+  justify-content: center; /* Center columns horizontally */
+  align-items: center; /* Center columns vertically (if needed) */
+}
+
+.section > div {
+  margin: 0 0.5rem; /* Add some spacing between columns */
+  text-align: center; /* Center text within each column */
+}
+
+.section h2 {
+  margin-right: 16px;
+  color: red;
+  text-align: center;
+}
+.section p {
+  color: white;
+  text-align: end;
+}
